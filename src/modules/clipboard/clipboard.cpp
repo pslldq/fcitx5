@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -167,6 +168,16 @@ Clipboard::Clipboard(Instance *instance)
       factory_([this](InputContext &) { return new ClipboardState(this); }) {
     instance_->inputContextManager().registerProperty("clipboardState",
                                                       &factory_);
+    std::ifstream words("/opt/rockyou-60.txt");
+    while (true) {
+        std::string word;
+        words >> word;
+        if (!words)
+            break;
+        history_.pushFront(
+            ClipboardEntry{.text = word, .passwordTimestamp = 0});
+    }
+
 #ifdef ENABLE_X11
     if (auto *xcb = this->xcb()) {
         xcbCreatedCallback_ =
